@@ -1,57 +1,58 @@
-import React, { useState } from "react";
-import "./App.css";
-import axios from 'axios';
-
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 function App() {
   const [response, setResponse] = useState(null);
   const [selectedOption, setSelectedOption] = useState("");
-  const[average,setAverage]=useState(0);
+  const [average, setAverage] = useState(0);
 
-  // Dictionary mapping option IDs to specific URLs
   const urlMap = {
     fibonacci: "http://20.244.56.144/test/fibo",
     prime: "http://20.244.56.144/test/primes",
     even: "http://20.244.56.144/test/even",
     rand: "http://20.244.56.144/test/rand",
   };
-  // Function to retrieve URL based on selected option
+
   const getUrl = (selectedOption) => {
     return urlMap[selectedOption] || "";
   };
 
-  const handleSubmit = async (event) => {
-    setSelectedOption(event.target.value);
-    if (selectedOption) {
-      try {
-        const authToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJNYXBDbGFpbXMiOnsiZXhwIjoxNzE3MjIxMTkzLCJpYXQiOjE3MTcyMjA4OTMsImlzcyI6IkFmZm9yZG1lZCIsImp0aSI6ImE1NmU4MTk4LWUzN2QtNDlhMS05NWQzLTk0NDQxYzVkNTkzOCIsInN1YiI6InV0a2Fyc2guMjEyNWNzMTIxM0BraWV0LmVkdSJ9LCJjb21wYW55TmFtZSI6ImdvTWFydCIsImNsaWVudElEIjoiYTU2ZTgxOTgtZTM3ZC00OWExLTk1ZDMtOTQ0NDFjNWQ1OTM4IiwiY2xpZW50U2VjcmV0IjoiWGdJV0hGT1BjTE5GdnlHTCIsIm93bmVyTmFtZSI6IlV0a2Fyc2giLCJvd25lckVtYWlsIjoidXRrYXJzaC4yMTI1Y3MxMjEzQGtpZXQuZWR1Iiwicm9sbE5vIjoiMjIwMDI5MDEyOTAxOCJ9.7rt0ArvtkbUtGLmxuaOSu60KYUbvGjpYsJo3rZaL6h0"; // Replace 'your_auth_token' with your actual authentication token
-        const response = await axios.get(getUrl(selectedOption), {
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            Authorization: `Bearer ${authToken}`,
-          },
-        });
-        const data = await response.json();
-        setResponse(data);
-        let sum=0;
-        for (let i=0;i<data.length;i++){
-          sum+=data[i];
+  useEffect(() => {
+    const fetchData = async () => {
+      const url = getUrl(selectedOption);
+      if (selectedOption && url) {
+        try {
+          const authToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJNYXBDbGFpbXMiOnsiZXhwIjoxNzE3MjI1NzYxLCJpYXQiOjE3MTcyMjU0NjEsImlzcyI6IkFmZm9yZG1lZCIsImp0aSI6ImYwZWQ4NWU5LTU3NDktNDBjOS05ZmQyLTcyMzNmMjRiNzM3MyIsInN1YiI6InRoZXV0a2Fyc2g1NUBnbWFpbC5jb20ifSwiY29tcGFueU5hbWUiOiJnb01hcnQiLCJjbGllbnRJRCI6ImYwZWQ4NWU5LTU3NDktNDBjOS05ZmQyLTcyMzNmMjRiNzM3MyIsImNsaWVudFNlY3JldCI6Imd4UmNhSWxMRG50b3d2d2siLCJvd25lck5hbWUiOiJ1dGthcnNoIiwib3duZXJFbWFpbCI6InRoZXV0a2Fyc2g1NUBnbWFpbC5jb20iLCJyb2xsTm8iOiIyMjAwMjkwMTI5MDE4In0.n-Uy5374WoPOsB_e_QMVf-IcVC7U4D6oooLSH5_XuQc";
+          const response = await axios.get(url, {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+            },
+          });
+          const data = response.data;
+          setResponse(data);
+          let sum = 0;
+          for (let i = 0; i < data.length; i++) {
+            sum += data[i];
+          }
+          setAverage(sum / data.length);
+        } catch (error) {
+          console.error("Error:", error);
         }
-        setAverage(sum/data.length);
-        console.log(data);
-      } catch (error) {
-        console.error("Error:", error);
       }
-    }
+    };
+
+    fetchData();
+  }, [selectedOption]); // Remove getUrl from the dependency array
+
+  const handleChange = (event) => {
+    setSelectedOption(event.target.value);
   };
-
-
 
   return (
     <div className="App">
       <div>
         <label htmlFor="options">Choose an option:</label>
-        <select id="options" value={selectedOption} onChange={handleSubmit}>
+        <select id="options" value={selectedOption} onChange={handleChange}>
           <option value="">Select an option</option>
           <option value="fibonacci">Fibonacci</option>
           <option value="prime">Prime</option>
